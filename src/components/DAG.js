@@ -3,7 +3,7 @@ import useWindowDimensions from "../hooks/useWindowDimensions";
 import "@react-sigma/core/lib/react-sigma.min.css";
 
 import { SigmaContainer, useLoadGraph, useSigma } from "@react-sigma/core";
-import { DirectedGraph, MultiDirectedGraph } from "graphology";
+import { MultiDirectedGraph } from "graphology";
 
 import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
