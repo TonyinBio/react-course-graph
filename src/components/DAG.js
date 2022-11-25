@@ -1,27 +1,52 @@
-import React, { useEffect } from 'react';
-
+import React, { useEffect, useState } from "react";
+import useWindowDimensions from "../hooks/useWindowDimensions";
 import "@react-sigma/core/lib/react-sigma.min.css";
-import { SigmaContainer, useLoadGraph } from '@react-sigma/core';
-import { UndirectedGraph } from 'graphology';
 
-import {erdosRenyi} from 'graphology-generators/random';
+import { SigmaContainer, useLoadGraph, useSigma } from "@react-sigma/core";
+import { DirectedGraph, MultiDirectedGraph } from "graphology";
 
-function LoadGraph({data}) {
-    const loadGraph = useLoadGraph()
+import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 
-    useEffect(() => {
-        
-        const graph = erdosRenyi(UndirectedGraph, { order: 100, probability: 0.2 })
-        console.log(graph)
-        loadGraph(graph);
-    }, [data])
+import circular from "graphology-layout/circular";
+
+function Graph({ data }) {
+	const loadGraph = useLoadGraph();
+
+	useEffect(() => {
+		const graph = new MultiDirectedGraph();
+		graph.import(data);
+
+		circular.assign(graph);
+		loadGraph(graph);
+	}, [data]);
 }
 
-export default function DAG() {
+function Fa2() {
+	const { start, kill, isRunning } = useWorkerLayoutForceAtlas2({
+		settings: { slowDown: 10 },
+	});
 
-  return (
-    <SigmaContainer style ={{height:"500px", width: "500px"}}>
-        <LoadGraph />
-    </SigmaContainer>
-  )
+	useEffect(() => {
+		// start FA2
+		start();
+		return () => {
+			// Kill FA2 on unmount
+			kill();
+		};
+	}, [start, kill]);
+}
+
+export default function DAG({ data }) {
+	const { height, width } = useWindowDimensions();
+
+	return (
+		<SigmaContainer
+			graph={MultiDirectedGraph}
+			style={{ height, width }}
+			settings={{ renderEdgeLabels: true, defaultEdgeType: "arrow" }}
+		>
+			<Graph data={data} />
+			<Fa2 />
+		</SigmaContainer>
+	);
 }
